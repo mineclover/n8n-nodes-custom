@@ -1,5 +1,5 @@
 {
-  "name": "n8n-nodes-google-sheets-style",
+  "name": "n8n-nodes-ca-google-sheets-style",
   "version": "0.1.0",
   "description": "n8n node for Google Sheets cell styling (read/write formatting)",
   "keywords": [
