@@ -51,22 +51,26 @@ packages/<node-name>/
 
 ### n8n-core 개발 환경 설정
 
-n8n-core 개발 모드에서 커스텀 노드를 로드하려면 패치 스크립트 실행:
+n8n-core 개발 모드에서 커스텀 노드를 로드하는 방법:
 
+**방법 1: 시작 스크립트 사용 (권장)**
 ```bash
-# 패치 스크립트 실행 (n8n-core CLI의 .env 파일 자동 생성/업데이트)
-./scripts/patch-n8n-dev.sh
-
-# n8n-core 경로가 다른 경우
-./scripts/patch-n8n-dev.sh /path/to/n8n-core
+./scripts/start-n8n-dev.sh
 ```
 
-패치 스크립트 기능:
-- `packages/` 하위 모든 빌드된 패키지 자동 감지
-- n8n-core CLI의 `.env` 파일에 `N8N_CUSTOM_EXTENSIONS` 자동 설정
-- 여러 패키지 동시 지원 (세미콜론으로 구분)
+**방법 2: 수동 환경변수 설정**
+```bash
+# 환경변수 설정
+eval $(./scripts/patch-n8n-dev.sh)
 
-패치 후 n8n 재시작 필요.
+# n8n 시작
+cd /path/to/n8n-core/packages/cli && node bin/n8n start
+```
+
+스크립트 기능:
+- `packages/` 하위 모든 빌드된 패키지 자동 감지
+- `N8N_CUSTOM_EXTENSIONS` 환경변수 자동 설정
+- 여러 패키지 동시 지원 (세미콜론으로 구분)
 
 ### 설치
 

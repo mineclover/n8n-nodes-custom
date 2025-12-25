@@ -6,32 +6,45 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MONOREPO_ROOT="$(dirname "$SCRIPT_DIR")"
+PACKAGES_DIR="$MONOREPO_ROOT/packages"
 
 # n8n-core 경로
 N8N_CORE_PATH="${1:-/Users/junwoobang/n8n/n8n-core}"
-ENV_FILE="$N8N_CORE_PATH/.env"
+N8N_CLI_PATH="$N8N_CORE_PATH/packages/cli"
 
 # 색상 정의
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# 패치 스크립트 실행
-echo -e "${YELLOW}Patching n8n with custom nodes...${NC}"
-"$SCRIPT_DIR/patch-n8n-dev.sh" "$N8N_CORE_PATH"
+# 빌드된 패키지 경로 수집
+EXTENSIONS=""
+for pkg_dir in "$PACKAGES_DIR"/*/; do
+    if [ -d "$pkg_dir/dist" ]; then
+        pkg_path=$(cd "$pkg_dir" && pwd)
+        if [ -n "$EXTENSIONS" ]; then
+            EXTENSIONS="$EXTENSIONS;$pkg_path"
+        else
+            EXTENSIONS="$pkg_path"
+        fi
+    fi
+done
 
-# .env 파일에서 환경변수 로드
-if [ -f "$ENV_FILE" ]; then
-    echo ""
-    echo -e "${GREEN}Loading environment from $ENV_FILE${NC}"
-    set -a
-    source "$ENV_FILE"
-    set +a
+if [ -z "$EXTENSIONS" ]; then
+    echo -e "${YELLOW}Warning: No built packages found. Run 'pnpm build' first.${NC}"
 fi
 
+# 환경변수 설정
+export N8N_CUSTOM_EXTENSIONS="$EXTENSIONS"
+
+echo -e "${GREEN}=== Starting n8n with Custom Nodes ===${NC}"
+echo ""
+echo -e "${YELLOW}N8N_CUSTOM_EXTENSIONS:${NC}"
+echo "$EXTENSIONS" | tr ';' '\n' | while read -r path; do
+    [ -n "$path" ] && echo "  - $path"
+done
+echo ""
+
 # n8n 시작
-echo ""
-echo -e "${GREEN}Starting n8n dev...${NC}"
-echo ""
-cd "$N8N_CORE_PATH"
-pnpm dev
+cd "$N8N_CLI_PATH"
+node bin/n8n start
