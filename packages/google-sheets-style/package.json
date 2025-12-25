@@ -1,0 +1,47 @@
+{
+  "name": "@n8n-nodes-custom/google-sheets-style",
+  "version": "0.1.0",
+  "description": "n8n node for Google Sheets cell styling (read/write formatting)",
+  "keywords": [
+    "n8n-community-node-package",
+    "google-sheets",
+    "formatting",
+    "style"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "junwoobang"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/junwoobang/n8n-nodes-custom.git",
+    "directory": "packages/google-sheets-style"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc && cp -r src/nodes/**/*.svg dist/nodes/ 2>/dev/null || true",
+    "dev": "tsc --watch",
+    "lint": "eslint . --ext .ts",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [],
+    "nodes": [
+      "dist/nodes/GoogleSheetsStyle/GoogleSheetsStyle.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
