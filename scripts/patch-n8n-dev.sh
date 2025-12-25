@@ -10,8 +10,8 @@ PACKAGES_DIR="$MONOREPO_ROOT/packages"
 
 # n8n-core 경로 (기본값 또는 인자로 받음)
 N8N_CORE_PATH="${1:-/Users/junwoobang/n8n/n8n-core}"
-N8N_CLI_PATH="$N8N_CORE_PATH/packages/cli"
-ENV_FILE="$N8N_CLI_PATH/.env"
+# .env는 n8n-core 루트에 생성 (turbo가 로드)
+ENV_FILE="$N8N_CORE_PATH/.env"
 
 # 색상 정의
 RED='\033[0;31m'
@@ -23,8 +23,8 @@ echo -e "${GREEN}=== n8n Custom Nodes Patch Tool ===${NC}"
 echo ""
 
 # n8n-core 경로 확인
-if [ ! -d "$N8N_CLI_PATH" ]; then
-    echo -e "${RED}Error: n8n CLI path not found: $N8N_CLI_PATH${NC}"
+if [ ! -d "$N8N_CORE_PATH" ]; then
+    echo -e "${RED}Error: n8n-core path not found: $N8N_CORE_PATH${NC}"
     echo "Usage: $0 [n8n-core-path]"
     exit 1
 fi
