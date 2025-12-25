@@ -51,17 +51,22 @@ packages/<node-name>/
 
 ### n8n-core 개발 환경 설정
 
-n8n-core 개발 모드에서 커스텀 노드를 로드하려면 `N8N_CUSTOM_EXTENSIONS` 환경변수 설정 필요:
+n8n-core 개발 모드에서 커스텀 노드를 로드하려면 패치 스크립트 실행:
 
 ```bash
-# 패치 스크립트 실행
+# 패치 스크립트 실행 (n8n-core CLI의 .env 파일 자동 생성/업데이트)
 ./scripts/patch-n8n-dev.sh
 
-# 또는 직접 설정
-export N8N_CUSTOM_EXTENSIONS="/path/to/n8n-nodes-custom/packages/google-sheets-style"
+# n8n-core 경로가 다른 경우
+./scripts/patch-n8n-dev.sh /path/to/n8n-core
 ```
 
-n8n 시작 시 이 환경변수가 설정되어 있어야 함.
+패치 스크립트 기능:
+- `packages/` 하위 모든 빌드된 패키지 자동 감지
+- n8n-core CLI의 `.env` 파일에 `N8N_CUSTOM_EXTENSIONS` 자동 설정
+- 여러 패키지 동시 지원 (세미콜론으로 구분)
+
+패치 후 n8n 재시작 필요.
 
 ### 설치
 
