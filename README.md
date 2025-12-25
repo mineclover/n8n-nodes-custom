@@ -49,6 +49,20 @@ packages/<node-name>/
 
 ## 개발
 
+### n8n-core 개발 환경 설정
+
+n8n-core 개발 모드에서 커스텀 노드를 로드하려면 `N8N_CUSTOM_EXTENSIONS` 환경변수 설정 필요:
+
+```bash
+# 패치 스크립트 실행
+./scripts/patch-n8n-dev.sh
+
+# 또는 직접 설정
+export N8N_CUSTOM_EXTENSIONS="/path/to/n8n-nodes-custom/packages/google-sheets-style"
+```
+
+n8n 시작 시 이 환경변수가 설정되어 있어야 함.
+
 ### 설치
 
 ```bash
