@@ -115,8 +115,29 @@ npm publish --access public
 
 패키지명 입력: `n8n-nodes-ca-<node-name>`
 
+## MCP 워크플로우 제어
+
+n8n-mcp로 커스텀 노드 포함 워크플로우 생성/제어 가능.
+
+커스텀 노드 타입 형식: `CUSTOM.<nodeName>`
+
+```json
+{
+  "type": "CUSTOM.googleSheetsStyle",
+  "typeVersion": 1,
+  "parameters": {
+    "operation": "getStyle",
+    "spreadsheetId": "...",
+    "sheetId": 0,
+    "range": "A1:C1"
+  }
+}
+```
+
+> 참고: n8n-mcp `search_nodes`는 커스텀 노드 인덱싱 미지원. 타입명 직접 사용.
+
 ## 패키지 목록
 
-| 패키지 | 설명 | npm |
-|--------|------|-----|
-| [google-sheets-style](./packages/google-sheets-style) | Google Sheets 셀 스타일 읽기/쓰기 | `n8n-nodes-ca-google-sheets-style` |
+| 패키지 | 설명 | npm | 노드 타입 |
+|--------|------|-----|----------|
+| [google-sheets-style](./packages/google-sheets-style) | Google Sheets 셀 스타일 읽기/쓰기 | `n8n-nodes-ca-google-sheets-style` | `CUSTOM.googleSheetsStyle` |
