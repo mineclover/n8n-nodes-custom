@@ -22,8 +22,10 @@
   },
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc && cp -r src/nodes/**/*.svg dist/nodes/ 2>/dev/null || true",
-    "dev": "tsc --watch",
+    "build": "tsc && find src/nodes -name '*.svg' -exec cp {} dist/nodes/GoogleSheetsStyle/ \\;",
+    "dev": "n8n-node dev",
+    "dev:watch": "tsc --watch",
+    "dev:link": "n8n-node dev --external-n8n",
     "lint": "eslint . --ext .ts",
     "prepublishOnly": "npm run build"
   },
@@ -38,6 +40,7 @@
     ]
   },
   "devDependencies": {
+    "@n8n/node-cli": "^0.1.0",
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0"
   },

@@ -341,10 +341,22 @@ async function getStyle(
 
 	const sheets = (response as IDataObject).sheets as IDataObject[];
 	if (!sheets || sheets.length === 0) {
-		return { error: 'No sheet data found' };
+		throw new Error('No sheet data found');
 	}
 
-	const sheetData = sheets[0] as IDataObject;
+	// Find the sheet with matching sheetId
+	const sheetData = sheets.find((sheet) => {
+		const properties = sheet.properties as IDataObject;
+		return properties && properties.sheetId === sheetId;
+	}) as IDataObject;
+
+	if (!sheetData) {
+		const availableSheets = sheets.map((sheet) => {
+			const props = sheet.properties as IDataObject;
+			return `${props.title} (id: ${props.sheetId})`;
+		}).join(', ');
+		throw new Error(`Sheet with ID ${sheetId} not found. Available sheets: ${availableSheets}`);
+	}
 	const data = (sheetData.data as IDataObject[]) || [];
 	if (data.length === 0) {
 		return { error: 'No data in range' };

@@ -51,26 +51,30 @@ packages/<node-name>/
 
 ### n8n-core 개발 환경 설정
 
-n8n-core 개발 모드에서 커스텀 노드를 로드하는 방법:
+n8n-core 개발 모드에서 커스텀 노드를 로드하는 방법.
 
-**방법 1: 시작 스크립트 사용 (권장)**
+> **Note**: 패치/실행 스크립트는 `n8n-workflow/scripts/`에서 관리됩니다.
+
+**방법 1: 시작 스크립트 + 핫 리로드 (권장)**
 ```bash
-./scripts/start-n8n-dev.sh
+cd /path/to/n8n-workflow
+./scripts/start-n8n-dev.sh --watch --kill     # 핫 리로드 모드
+./scripts/start-n8n-dev.sh --build            # 빌드 후 시작
+./scripts/start-n8n-dev.sh --list             # 패키지 목록 확인
 ```
 
-**방법 2: 수동 환경변수 설정**
+**방법 2: 수동 실행**
 ```bash
-# 환경변수 설정
-eval $(./scripts/patch-n8n-dev.sh)
+# 터미널 1: 빌드 감시 모드
+cd /path/to/n8n-nodes-custom/packages/<node-name>
+npx n8n-node dev --external-n8n
 
-# n8n 시작
+# 터미널 2: n8n 실행
+export N8N_CUSTOM_EXTENSIONS=~/.n8n/custom
 cd /path/to/n8n-core/packages/cli && node bin/n8n start
 ```
 
-스크립트 기능:
-- `packages/` 하위 모든 빌드된 패키지 자동 감지
-- `N8N_CUSTOM_EXTENSIONS` 환경변수 자동 설정
-- 여러 패키지 동시 지원 (세미콜론으로 구분)
+자세한 내용은 [n8n-workflow/docs/development-guide.md](../n8n-workflow/docs/development-guide.md) 참조
 
 ### 설치
 
@@ -88,15 +92,38 @@ pnpm build
 pnpm --filter n8n-nodes-ca-google-sheets-style build
 ```
 
-### 로컬 테스트
+### 로컬 개발 (권장)
 
 ```bash
-cd ~/.n8n
-npm install /path/to/n8n-nodes-custom/packages/<node-name>
-# n8n 재시작
+# 터미널 1: 심링크 생성 (최초 1회)
+cd n8n-nodes-custom
+pnpm dev:link
+
+# 터미널 2: 모든 패키지 watch
+cd n8n-nodes-custom
+pnpm dev
+
+# 터미널 3: n8n 실행
+export N8N_CUSTOM_EXTENSIONS=~/.n8n/custom
+cd n8n-core && pnpm dev
 ```
 
-## 배포
+**모노레포 스크립트:**
+
+| 스크립트 | 설명 |
+|---------|------|
+| `pnpm dev` | 모든 패키지 tsc --watch (병렬) |
+| `pnpm dev:link` | 모든 패키지 ~/.n8n/custom에 심링크 |
+| `pnpm build` | 모든 패키지 빌드 |
+
+**작동 원리:**
+1. `pnpm dev:link`: 각 패키지를 `~/.n8n/custom`에 심링크
+2. `pnpm dev`: 모든 패키지 tsc --watch로 변경 감지
+3. n8n 재시작으로 변경사항 반영
+
+> **Note**: `npx n8n`에서는 `N8N_CUSTOM_EXTENSIONS`가 동작하지 않음. n8n-core 소스 빌드 필수.
+
+## 배포 및 설치
 
 ### npm 퍼블리시
 
@@ -107,20 +134,32 @@ npm publish --access public
 
 > OTP 인증 필요. 퍼블리시는 수동으로 진행.
 
-### n8n에서 설치
+### n8n에서 설치 (프로덕션 권장)
 
-퍼블리시 후 n8n UI에서:
+퍼블리시 후 n8n UI에서 설치:
 
-**Settings → Community Nodes → Install**
+1. **Settings → Community Nodes → Install**
+2. 패키지명 입력: `n8n-nodes-ca-<node-name>`
 
-패키지명 입력: `n8n-nodes-ca-<node-name>`
+> **프로덕션**: Community Nodes 설치 방식 사용
+> **개발**: `--watch` 모드로 로컬 개발 (위 "로컬 개발" 섹션 참조)
 
 ## MCP 워크플로우 제어
 
 n8n-mcp로 커스텀 노드 포함 워크플로우 생성/제어 가능.
 
-커스텀 노드 타입 형식: `CUSTOM.<nodeName>`
+### 노드 타입 형식
 
+노드 타입은 **설치 방식에 따라 다릅니다**:
+
+| 설치 방식 | 노드 타입 형식 | 예시 |
+|----------|---------------|------|
+| Community Nodes (npm) | `{pkg-without-n8n}.{name}` | `nodes-ca-google-sheets-style.googleSheetsStyle` |
+| N8N_CUSTOM_EXTENSIONS (로컬) | `CUSTOM.{name}` | `CUSTOM.googleSheetsStyle` |
+
+### 워크플로우 예시
+
+**로컬 개발 (--watch 모드):**
 ```json
 {
   "type": "CUSTOM.googleSheetsStyle",
@@ -134,10 +173,27 @@ n8n-mcp로 커스텀 노드 포함 워크플로우 생성/제어 가능.
 }
 ```
 
-> 참고: n8n-mcp `search_nodes`는 커스텀 노드 인덱싱 미지원. 타입명 직접 사용.
+**프로덕션 (Community Nodes):**
+```json
+{
+  "type": "nodes-ca-google-sheets-style.googleSheetsStyle",
+  "typeVersion": 1,
+  "parameters": { ... }
+}
+```
+
+> **주의**: 로컬에서 만든 워크플로우를 프로덕션에 배포 시 노드 타입 변경 필요
+
+### MCP에서 커스텀 노드 검색
+
+n8n-mcp에서 커스텀 노드 검색 가능 (패치 적용 시):
+
+```
+search_nodes googleSheetsStyle
+```
 
 ## 패키지 목록
 
-| 패키지 | 설명 | npm | 노드 타입 |
-|--------|------|-----|----------|
-| [google-sheets-style](./packages/google-sheets-style) | Google Sheets 셀 스타일 읽기/쓰기 | `n8n-nodes-ca-google-sheets-style` | `CUSTOM.googleSheetsStyle` |
+| 패키지 | 설명 | npm | 워크플로우 타입 |
+|--------|------|-----|----------------|
+| [google-sheets-style](./packages/google-sheets-style) | Google Sheets 셀 스타일 읽기/쓰기 | `n8n-nodes-ca-google-sheets-style` | `nodes-ca-google-sheets-style.googleSheetsStyle` |
